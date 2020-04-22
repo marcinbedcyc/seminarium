@@ -47,7 +47,7 @@ if __name__ == '__main__':
     if args.gpu:
         interpreter = tflite.Interpreter(
             model_path=args.model_file,
-            experimental_delegates=[tflite.load_delegates('libedgetup.so.1')]
+            experimental_delegates=[tflite.load_delegate('libedgetup.so.1')]
         )
     else:
         interpreter = tflite.Interpreter(model_path=args.model_file)
