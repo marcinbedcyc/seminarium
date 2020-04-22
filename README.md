@@ -18,7 +18,37 @@ source ~/.local/bin/virtualenvwrapper.sh # path to virtualenvwrapper.sh (ró¿ne w
 Od teraz przy pomocy `mkvirtualenv example_name` mo¿emy utworzyæ nowe wirtualne ¶rodowisko, aby je aktywowaæ nale¿y wykonaæ `workon example_name`.
 
 ### Tensorflow Lite
-Aby wykorzystaæ [TensorFlowLite](https://www.tensorflow.org/lite/guide)  na urz±dzeniu raspberry PI musimy zainstalowaæ odpowiedni± wersjê:
+Dostarcza narzêdzia potrzbne to uruchomienia TensorFlow na urz±dzeniach mobilnych, IoT oraz urz±dzeniach osadzonych (z ang. embedded). 
+
+1. Na pocz±tek potrzebujemy modelu TensorFlow. Jest struktura danych, która zawiera logikê i mechanizmy wyszkolnych sieci neuronwych. Taki model mo¿emy sami wytrenowaæ albo skorzystaæ z wytrenowanych ju¿ modeli.**TensorFlow Lite nie udostêpnia narzêdzi do szkolenia modeli**. Przyk³adowe wyæwiczone modele dostarczone przez TensorFlow to: 
+
+	* Klasyfikacja obrazów
+	* Wykrywanie obiektów
+	* Inteligentne odpowiedzi
+	* Pose estimation
+	* Segmentation
+	* Transfer stylu
+	* Klasyfikacja tekstu
+	* Pytania i odpowiedzi
+
+	Sk±d jeszcze czerpaæ modele: [TensorFlowHub](https://www.tensorflow.org/hub) . Przed skorzystanie nale¿y przekonwertowaæ te modele na format Lite.
+	Modele równie¿ mog± zostaæ przetrenowane ponownie, jest to mniej z³o¿ona operacja ni¿ wytrenowanie modelu od zera.
+
+1. TensorFlow LIte jest stworzone aby wykorzystaæ modele efektywnie na urz±dzenia ograniczonych w moc obliczeniow± i zasoby. Czê¶æ tej efektywno¶ci mo¿emy uzyskac poprzez stosowanie specjlanego formatu do przechowywaniu modelu.Konwersja jest obowi±zkowa dla TensorFlow Lite. Konwersja powoduje zmianê rozmiaru, wproawdza optymalizacje, ale nie wywiera wp³ywu na dok³adno¶æ. Aby przekonwertowaæ model musimy u¿yæ modu³u TensorFlow(nie Lite):
+	```
+		import tensorflow as tf
+
+		converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)
+		tflite_model = converter.convert()
+		open("converted_model.tflite", "wb").write(tflite_model)
+	```
+	
+	Konwerter równie¿ mo¿emy uzyc z  poziomu linii poleceñ:
+	```
+		tflite_convert --saved_model_dir=/tmp/mobilenet_saved_model  --output_file=/tmp/mobilenet.tflite
+	```
+
+Aby wykorzystaæ [TensorFlowLite](https://www.tensorflow.org/lite/guide)  na urz±dzeniu raspberry PI musimy zainstalowaæ odpowiedni± wersjê. Pobrana wersja tak naprawdê udostêpnia jedynie interpreter do modeli. Poprawnie pe³nej wersji TensorFlow, a nie jedynie wersji Lite powodowa³o b³êdy (pobiera³a siê wersja 1.x, gdzie aktualna wersja to 2.2):
 ```
 pip install https://dl.google.com/coral/python/tflite_runtime-2.1.0.post1-cp37-cp37m-linux_armv7l.whl
 ```
