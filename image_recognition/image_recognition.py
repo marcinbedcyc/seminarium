@@ -15,7 +15,7 @@ def load_labels(filename):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(  # 4E4E4E
+    parser.add_argument(
         '-i',
         '--image',
         default='/tmp/grace_hopper.bmp',
@@ -38,9 +38,19 @@ if __name__ == '__main__':
         '--input_std',
         default=127.5, type=float,
         help='input standard deviation')
+    parser.add_argument(
+        '--gpu',
+        default=False, type=bool,
+        help='run interpreter on GPU')
     args = parser.parse_args()
 
-    interpreter = tflite.Interpreter(model_path=args.model_file)
+    if args.gpu:
+        interpreter = tflite.Interpreter(
+            model_path=args.model_file,
+            experimental_delegates=[tflite.load_delegates('libedgetup.so.1')]
+        )
+    else:
+        interpreter = tflite.Interpreter(model_path=args.model_file)
     interpreter.allocate_tensors()
 
     input_details = interpreter.get_input_details()
