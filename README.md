@@ -1,29 +1,30 @@
 # Wykorzystanie modeli TensorFlow na Raspberry Pi
 
 ### Opis
-Analiza wykorzystywania wyuczonych modeli uczenia maszynowego na raspberry PI. Gromadzenie informacji na potrzebny pracy inn¿ynierskiej.
+Analiza wykorzystywania wyuczonych modeli uczenia maszynowego na raspberry PI. Gromadzenie informacji na potrzebny pracy innÅ¼ynierskiej.
 
-### Konfiguracja ¶rodowiska
-G³ównie bêdziemy pracowaæ z `python`, dlatego rekomenduje instalacje ¶rodowiska wirtulanego, w którym bêdziemy trzymaæ wszystkie zainstalowane biblioteki przy pomocy `pip`. Dodatkowo poleca u¿ycie `virtualnenvwrapper` aby trzymaæ wszystkie ¶rodowiska wirtualne na komputerze w jednym miejsciu. Tutaj mog± wyst±piæ problemy z instalacj± na urz±dzeniu Raspberry spowodowane s³ab± kompatybilno¶ci±. U mnie zadzia³o zainstlowanie `virtualenvwrapper` w wersji 4.8.4  z podanie numeru wersji podczas instalacji(`pip install virtualenvwrapper` nie dzia³a³o)): 
+### Konfiguracja Åšrodowiska
+GÅ‚Ã³wnie bÄ™dziemy pracowaÄ‡ z `python`, dlatego rekomenduje instalacje Å›rodowiska wirtulanego, w ktÃ³rym bÄ™dziemy trzymaÄ‡ wszystkie zainstalowane biblioteki przy pomocy `pip`. Dodatkowo poleca uÅ¼ycie `virtualnenvwrapper` aby trzymaÄ‡ wszystkie Å›rodowiska wirtualne na komputerze w jednym miejscu. Tutaj mogÄ… wystÄ…piÄ‡ problemy z instalacjÄ… na urzÄ…dzeniu Raspberry spowodowane sÅ‚abÄ… kompatybilnoÂ¶ciÄ…. U mnie zadziaÅ‚o zainstlowanie `virtualenvwrapper` w wersji 4.8.4  z podanie numeru wersji podczas instalacji(`pip install virtualenvwrapper` nie dziaÅ‚aÅ‚o)): 
 ```
 pip install virtualenvwrapper=="4.8.4"
 ```
-Nastêpnie musimy edytowaæ plik `.bashrc` dodaj±c nastepuj±ce wpisy:
+NastÄ™pnie musimy edytowaÄ‡ plik `.bashrc` dodajÄ…c nastepujÄ…ce wpisy:
 ```
 export WORKON_HOME=$HOME/.virtualenvs
 VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
 VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv
-source ~/.local/bin/virtualenvwrapper.sh # path to virtualenvwrapper.sh (ró¿ne w zale¿no¶ci od systemu)
+source ~/.local/bin/virtualenvwrapper.sh # path to virtualenvwrapper.sh (rÃ³Å¼ne w zaleÅ¼noÂ¶ci od systemu)
 ```
-Od teraz przy pomocy `mkvirtualenv example_name` mo¿emy utworzyæ nowe wirtualne ¶rodowisko, aby je aktywowaæ nale¿y wykonaæ `workon example_name`.
+Od teraz przy pomocy `mkvirtualenv example_name` moÅ¼emy utworzyÄ‡ nowe wirtualne Å›rodowisko, aby je aktywowaÄ‡ naleÅ¼y wykonaÄ‡ `workon example_name`.
 
 ### Tensorflow Lite
-Dostarcza narzêdzia potrzbne to uruchomienia TensorFlow na urz±dzeniach mobilnych, IoT oraz urz±dzeniach osadzonych (z ang. embedded). 
+Dostarcza narzÄ™dzia potrzebne to uruchomienia TensorFlow na urzÄ…dzeniach mobilnych, IoT oraz urzÄ…dzeniach osadzonych (z ang. embedded). 
 
-1. Na pocz±tek potrzebujemy modelu TensorFlow. Jest struktura danych, która zawiera logikê i mechanizmy wyszkolnych sieci neuronwych. Taki model mo¿emy sami wytrenowaæ albo skorzystaæ z wytrenowanych ju¿ modeli.**TensorFlow Lite nie udostêpnia narzêdzi do szkolenia modeli**. Przyk³adowe wyæwiczone modele dostarczone przez TensorFlow to: 
+##### 1. Na poczÄ…tek potrzebujemy modelu TensorFlow
+Jest to struktura danych, ktÃ³ra zawiera logikÄ™ i mechanizmy wyszkolnych sieci neuronwych. Taki model moÅ¼emy sami wytrenowaÄ‡ albo skorzystaÄ‡ z wytrenowanych juÅ¼ modeli.**TensorFlow Lite nie udostÄ™pnia narzÄ™dzi do szkolenia modeli**. PrzykÅ‚adowe wyÄ‡wiczone modele dostarczone przez TensorFlow to: 
 
-	* Klasyfikacja obrazów
-	* Wykrywanie obiektów
+	* Klasyfikacja obrazÃ³w
+	* Wykrywanie obiektÃ³w
 	* Inteligentne odpowiedzi
 	* Pose estimation
 	* Segmentation
@@ -31,57 +32,97 @@ Dostarcza narzêdzia potrzbne to uruchomienia TensorFlow na urz±dzeniach mobilnyc
 	* Klasyfikacja tekstu
 	* Pytania i odpowiedzi
 
-	Sk±d jeszcze czerpaæ modele: [TensorFlowHub](https://www.tensorflow.org/hub) . Przed skorzystanie nale¿y przekonwertowaæ te modele na format Lite.
-	Modele równie¿ mog± zostaæ przetrenowane ponownie, jest to mniej z³o¿ona operacja ni¿ wytrenowanie modelu od zera.
+	SkÄ…d jeszcze czerpaÄ‡ modele: [TensorFlowHub](https://www.tensorflow.org/hub) . Przed skorzystanie naleÅ¼y przekonwertowaÄ‡ te modele na format Lite.
+	Modele rÃ³wnieÅ¼ mogÄ… zostaÄ‡ przetrenowane ponownie, jest to mniej zÅ‚oÅ¼ona operacja niÅ¼ wytrenowanie modelu od zera.
 
-1. TensorFlow LIte jest stworzone aby wykorzystaæ modele efektywnie na urz±dzenia ograniczonych w moc obliczeniow± i zasoby. Czê¶æ tej efektywno¶ci mo¿emy uzyskac poprzez stosowanie specjlanego formatu do przechowywaniu modelu.Konwersja jest obowi±zkowa dla TensorFlow Lite. Konwersja powoduje zmianê rozmiaru, wproawdza optymalizacje, ale nie wywiera wp³ywu na dok³adno¶æ. Aby przekonwertowaæ model musimy u¿yæ modu³u TensorFlow(nie Lite):
-	```
+##### 2. Wykorzystaj to mÄ…drze
+TensorFlow Lite jest stworzone aby wykorzystaÄ‡ modele efektywnie na urzÄ…dzeniach ograniczonych w moc obliczeniowÄ… i zasoby. CzÄ™Å›Ä‡ tej efektywnoÅ›ci moÅ¼emy uzyskaÄ‡ poprzez stosowanie specjlanego formatu do przechowywaniu modelu.Konwersja jest obowiÄ…zkowa dla TensorFlow Lite. Konwersja powoduje zmianÄ™ rozmiaru, wproawdza optymalizacje, ale nie wywiera wpÅ‚ywu na dokÅ‚adnoÅ›Ä‡. Aby przekonwertowaÄ‡ model musimy uÅ¼yÄ‡ moduÅ‚u TensorFlow(nie Lite):
+```
+import tensorflow as tf
+
+converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)
+tflite_model = converter.convert()
+open("converted_model.tflite", "wb").write(tflite_model)
+```
+
+Konwertera rÃ³wnieÅ¼ moÅ¼emy uÅ¼yÄ‡ z poziomu linii poleceÅ„:
+```
+tflite_convert --saved_model_dir=model  --output_file=model.tflite
+```
+
+Akcpetowalne wejÅ›cie przez konwerter:
+* 1.x models:
+	* SavedModel directories
+	* Frozen GraphDef (models generated by freeze_graph.py)
+	* Keras HDF5 models
+	* Models taken from a tf.Session
+* 2.x models:
+	* SavedModel directories
+	* tf.keras models
+	* Concrete functions
+
+TensorFlow Lite wspiera ograniczonÄ… liczbÄ™ opracji TensorFlow: [Ograniczenia](https://www.tensorflow.org/lite/guide/ops_compatibility) 
+
+##### 3. Inference - wnioskowanie
+Wnioskowanie na podstawie modelu t.zw. **Inference** - proces, ktÃ³ry analizuje dane na podstawie modelu i zwraca przewidywania. Wyamgany jest model, interpreter oraz dane wejÅ›ciowe. Interpreter jest to biblioteka, ktÃ³e przyjmuje plik modelu, wykonuje opercjÄ™ i definuje wynik. Dostarczone jest proste API interpretera na wiele platform: Java, Swift, Objective-C, C++ oraz Python. Skupmy siÄ™ na ostatnim:
+* TensorFlow: 
+	```python
 	import tensorflow as tf
 
-	converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)
-	tflite_model = converter.convert()
-	open("converted_model.tflite", "wb").write(tflite_model)
+	tf.lite.Interpreter(
+		model_path=None, model_content=None, experimental_delegates=None
+	)
 	```
-	
-	Konwerter równie¿ mo¿emy uzyc z  poziomu linii poleceñ:
-	```
-	tflite_convert --saved_model_dir=/tmp/mobilenet_saved_model  --output_file=/tmp/mobilenet.tflite
-	```
-	
-	Akcpetowalne wej¶cie przez konwerter:
-	* 1.x models:
-		* SavedModel directories
-		* Frozen GraphDef (models generated by freeze_graph.py)
-		* Keras HDF5 models
-		* Models taken from a tf.Session
-	* 2.x models:
-		* SavedModel directories
-		* tf.keras models
-		* Concrete functions
-	
-	TensorFlow LIte wspiera ograniczon± liczbê opracji TensorFow: [Ograniczenia](https://www.tensorflow.org/lite/guide/ops_compatibility) 
+* TensorFlow Lite:
+	```python
+	import tflite_runtime.interpreter as tflite
 
-1. Wnioskowanie na podstawie modelu, Inference - proces, który analizuje dane na podstaiwe modelu i zwraca przewidywania. ymaganyn jest model, interpreter oraz dane wej¶ciowe.
-	
+	tflite.Interpreter(model_path=args.model_file)
+	```
 
-Aby wykorzystaæ [TensorFlowLite](https://www.tensorflow.org/lite/guide)  na urz±dzeniu raspberry PI musimy zainstalowaæ odpowiedni± wersjê. Pobrana wersja tak naprawdê udostêpnia jedynie interpreter do modeli. Poprawnie pe³nej wersji TensorFlow, a nie jedynie wersji Lite powodowa³o b³êdy (pobiera³a siê wersja 1.x, gdzie aktualna wersja to 2.2):
+	NiektÃ³re urzÄ…dzenia wspierajÄ… akceleracjÄ™ sprzÄ™towÄ… dla operacji uczenia maszynowego. Na przykÅ‚ad wiÄ™kszoÅ›Ä‡ smartfonÃ³w posaida GPU(Raspberry Pi rÃ³wnieÅ¼). MoÅ¼emy otrzymaÄ‡ znaczne przyÅ›pieszenie. TensorFlow Lite moÅ¼e byÄ‡ skonfigurowany z delgacjami aby wykorzystaÄ‡ akceleracjÄ™ sprzÄ™towÄ…. Pozwala to wykonaÄ‡ czÄ™Å›Ä‡ operacji na GPU. 
+
+* TensorFlow Lite:
+	```python
+	import tflite_runtime.interpreter as tflite
+
+	interpreter = tflite.Interpreter(model_path, experimental_delegates=[tflite.load_delegates('libedgetup.so.1')])
+	```
+
+##### 4. Optymalizacja modelu
+TensorFlow Lite udostÄ™pnia optymalizacujÄ…ce rozmiar i wydajnoÅ›Ä‡ modeli, czÄ™sto z minimalnym wpÅ‚ywem na dokÅ‚adnoÅ›Ä‡. Zoptymalizowane modele wymagajÄ… odrobinÄ™ bardziej zÅ‚oÅ¼onego trenigu, konwersji i integracji.
+* WydajnoÅ›Ä‡
+ZaÅ‚oÅ¼enienim jest uzyskanie optymalnej rÃ³wnowagi pomiÄ™dzy wydajnoÅ›ciÄ…, rozmiarem i skutecznoÅ›ciÄ….
+* Kwantyzacja (ang. Quantization)
+Poprzez zredukowanie precyzji kwantyzacja moÅ¼e zmniejszyÄ‡ zarÃ³wno rozmiar i czas. TensorFlow Lite moÅ¼e zredukowac precyzjÄ™ o poÅ‚owÄ™ (float16) lub do 8-bit integers. Kwantyzacja moÅ¼e zostaÄ‡ wykonana poprzez paczkÄ™ **TensorFlow**. PrzykÅ‚adowy kod kwantyzacji:
+	* TensorFlow
+		```python
+		import tensorflow as tf
+
+		converter = tf.lite.TFLiteConverter.from_saved_model(model_dir)
+		converter.optimizations = [tf.lite.Optimize.DEFAULT]
+		tflite_quant_model = converter.convert()
+		open("conv_model.tflite", "wb").write(tflite_quant_model)
+		```
+
+Aby wykorzystaÄ‡ [TensorFlowLite](https://www.tensorflow.org/lite/guide)  na urzÄ…dzeniu raspberry PI musimy zainstalowaÄ‡ odpowiedniÂ± wersjÄ™. Pobrana wersja tak naprawdÄ™ udostÄ™pnia jedynie interpreter do modeli. Pobranie peÅ‚nej wersji TensorFlow, a nie jedynie wersji Lite powodowaÅ‚o bÅ‚Ä™dy (pobieraÅ‚a siÄ™ wersja 1.x, gdzie aktualna wersja to 2.2):
 ```
 pip install https://dl.google.com/coral/python/tflite_runtime-2.1.0.post1-cp37-cp37m-linux_armv7l.whl
 ```
-Oprócz tej g³ównej biblioteki bêdziemy potrzebowaæ `numpy` oraz `pillow`. Mo¿emy je zainstalowaæ przy pomocy zamieszczonego pliku `requirements.txt`:
+OprÃ³cz tej gÅ‚Ã³wnej biblioteki bÄ™dziemy potrzebowaÄ‡ `numpy` oraz `pillow`. MoÅ¼emy je zainstalowaÄ‡ przy pomocy zamieszczonego pliku `requirements.txt`:
 ```
 pip install - r requirements.txt
 ```
 
-Przyk³ad wykorzystania rozponowania obrazków:
+PrzykÅ‚ad wykorzystania rozponowania obrazkÃ³w:
 ```
 https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/examples/python/
 ```
-Aby dzia³a³o musimy poczyniæ kilka zmian, poniewa¿ nie mamy zainstalowanego czystegoTensorflow. W folderze `image_recognition` jest przkeszta³cony plik z komentarzami opisuj±cymi dzia³anie programu. W tym ktalogu równie¿ znajduj± siê przekszta³cony model zapisany w formacie `.tflite`, katalog `images` z przyk³adowymi obrazki do klasyfikacji oraz znaczniki. Aby uruchomiæ program nale¿y wykonaæ:
+Aby dziaÅ‚aÅ‚o musimy poczyniÄ‡ kilka zmian, poniewaÅ¼ nie mamy zainstalowanego czystegoTensorflow. W folderze `image_recognition` jest przkesztaÅ‚cony plik z komentarzami opisujÂ±cymi dziaÅ‚anie programu. W tym ktalogu rÃ³wnieÅ¼ znajdujÂ± siÄ™ przeksztaÅ‚cony model zapisany w formacie `.tflite`, katalog `images` z przykÅ‚adowymi obrazki do klasyfikacji oraz znaczniki. Aby uruchomiÄ‡ program naleÅ¼y wykonaÄ‡:
 ```
 python image_recognition --model_file model.tflite --label_file labels.txt --image cat.png
 ```
-Przyk³adowy output:
+PrzykÅ‚adowy output:
 ```
 0.263747: 286:Egyptian cat
 0.263291: 281:grey fox, gray fox, Urocyon cinereoargenteus
@@ -89,4 +130,4 @@ Przyk³adowy output:
 0.079361: 105:wallaby, brush kangaroo
 0.044219: 278:red fox, Vulpes vulpes
 ```
-Gdzie pierwsza kolumna to jest trafno¶æ modelu, a druga etykiety dopasowania.
+Gdzie pierwsza kolumna to jest trafnoÅ›Ä‡ modelu, a druga to etykiety dopasowania.

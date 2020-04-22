@@ -1,0 +1,4 @@
+pillow == 7.1.1
+numpy == 1.18.3
+# tensorflowlite install with instructions in README.md
+
