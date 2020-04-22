@@ -5,7 +5,7 @@ import argparse
 import pprint
 import numpy as np
 from PIL import Image
-import tflite_runtime.interpreter as tflite
+import tensorflow as tf
 
 
 def load_labels(filename):
@@ -15,7 +15,7 @@ def load_labels(filename):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(  # 4E4E4E
+    parser.add_argument(
         '-i',
         '--image',
         default='/tmp/grace_hopper.bmp',
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         help='input standard deviation')
     args = parser.parse_args()
 
-    interpreter = tflite.Interpreter(model_path=args.model_file)
+    interpreter = tf.lite.Interpreter(model_path=args.model_file)
     interpreter.allocate_tensors()
 
     input_details = interpreter.get_input_details()
