@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 import argparse
 import pprint
+import time
 import numpy as np
 from PIL import Image
 import tensorflow as tf
@@ -40,6 +41,7 @@ if __name__ == '__main__':
         help='input standard deviation')
     args = parser.parse_args()
 
+    start_time = time.time()
     interpreter = tf.lite.Interpreter(model_path=args.model_file)
     interpreter.allocate_tensors()
 
@@ -71,9 +73,12 @@ if __name__ == '__main__':
     top_k = results.argsort()[-5:][::-1]
     pprint.pprint(top_k)
     labels = load_labels(args.label_file)
+    end_time = time.time() - start_time
 
     for i in top_k:
         if floating_model:
             print('{:08.6f}: {}'.format(float(results[i]), labels[i]))
         else:
             print('{:08.6f}: {}'.format(float(results[i] / 255.0), labels[i]))
+   
+    print(f"Recognition duration: {end_time:.2f} s")

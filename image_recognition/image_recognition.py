@@ -4,6 +4,7 @@ from __future__ import print_function
 import argparse
 import pprint
 import numpy as np
+import time
 from PIL import Image
 import tflite_runtime.interpreter as tflite
 
@@ -44,6 +45,7 @@ if __name__ == '__main__':
         help='run interpreter on GPU')
     args = parser.parse_args()
 
+    start_time = time.time()
     if args.gpu:
         interpreter = tflite.Interpreter(
             model_path=args.model_file,
@@ -81,9 +83,12 @@ if __name__ == '__main__':
     top_k = results.argsort()[-5:][::-1]
     pprint.pprint(top_k)
     labels = load_labels(args.label_file)
+    end_time = time.time() - start_time
 
     for i in top_k:
         if floating_model:
             print('{:08.6f}: {}'.format(float(results[i]), labels[i]))
         else:
             print('{:08.6f}: {}'.format(float(results[i] / 255.0), labels[i]))
+
+    print(f"Recognition duration: {end_time:.2f} s")
