@@ -4,7 +4,7 @@
 Analiza wykorzystywania wyuczonych modeli uczenia maszynowego na raspberry PI. Gromadzenie informacji na potrzebny pracy innżynierskiej.
 
 ### Konfiguracja Środowiska
-Głównie będziemy pracować z `python`, dlatego rekomenduje instalacje środowiska wirtulanego, w którym będziemy trzymać wszystkie zainstalowane biblioteki przy pomocy `pip`. Dodatkowo poleca użycie `virtualnenvwrapper` aby trzymać wszystkie środowiska wirtualne na komputerze w jednym miejscu. Tutaj mogą wystąpić problemy z instalacją na urządzeniu Raspberry spowodowane słabą kompatybilno¶cią. U mnie zadziało zainstlowanie `virtualenvwrapper` w wersji 4.8.4  z podanie numeru wersji podczas instalacji(`pip install virtualenvwrapper` nie działało)): 
+Głównie będziemy pracować z `python`, dlatego rekomenduje instalacje środowiska wirtulanego, w którym będziemy trzymać wszystkie zainstalowane biblioteki przy pomocy `pip`. Dodatkowo poleca użycie `virtualnenvwrapper` aby trzymać wszystkie środowiska wirtualne na komputerze w jednym miejscu. Tutaj mogą wystąpić problemy z instalacją na urządzeniu Raspberry spowodowane słabą kompatybilnością. U mnie zadziało zainstlowanie `virtualenvwrapper` w wersji 4.8.4  z podanie numeru wersji podczas instalacji(`pip install virtualenvwrapper` nie działało)): 
 ```
 pip install virtualenvwrapper=="4.8.4"
 ```
