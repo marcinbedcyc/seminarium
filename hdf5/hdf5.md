@@ -1,0 +1,135 @@
+# HDF5 - standard plików BIG DATA
+
+### 1. Co to jest ?
+HDF5 (Hieracchial Data Format v5) - jest to standard opisujący strukture pliku, do którego w hierarchiczny i ustrukturyzowany sposób możemy zapisywać tablicę danych (system plików w jednym pliku). Dostęp do danych zgromadzonych w datasecie możemy dostać sie poprzez interfejs identyczny z **numpy**. Jest to istotne, bo operacje odbywają się na dysku, do pamięci wczytanę są dane, które są potrzbne w danym momencie. Kto wczyta do pamięci 80GB plik ?
+
+---
+
+### 2. W jakim celu został utworzony?
+Worklow podczas pracy związanej z anlizą danych: odczyt danych -> wczytanie do pamięci -> algorytmy ->dobieramy parametry -> zbieramy dane.
+Przetwarzanie ogromnych plików z danymi wymagania dużej wolnej przestrzeni w RAM'ie, w przypadku bardzo dużych plików danych może nam tej pamięci zabraknąć, co wtedy? Aby uniknąć tego problemu należy dane wczytywać i przetwarzać dane partiami. Takie podejście wymaga dodatkowego kodu, a HDF5 umożliwia łatwe i schludne napisanie kodu.
+
+---
+
+### 3. Format plku
+W obrębie pliku możemy utworzyć 3 rodzaje obiektów:
+    * Grupy - tak jak foldery w systemie plików
+    * Datasety - tak jak pliki w systemie plików, ale mają postać macierzyo ustalonych wymiarach
+    * Atrybuty - metadane, które umożliwiają opsianie grupy lub datasetu(dodatkowa informacja np. autor, data itd.)
+
+---
+
+### 4. W czym pomaga?
+* Zbieranie i przechowywanie danych z czujników/sensorów w formie jednego pliku, a w nim możemy pokatalogować dane, doatkowo opisać poszczególne partie.
+* Przetwarzenia małych plików. Zamiast pracować z milionami plików, możemy je zapisac w jednym pliku. Dzięki temu łatwiej możemy taki plik  łatwiej udostępnić, operacje kopiowania z dysku na dysk lub przez sieć wykonują się zdecydowanie szybciej.
+* Zgodność interfejsu z **numpy*
+
+---
+
+### 5. Przechowywanie w blokach
+Dane możemy również przetrzymać w blokach/częściach. Dataset utworzony przy uzyciu **HDF5's chunked layout** jest podzielony na regularnego rozmiaru części i jest przechowywany na dysku w różnych miejscach dostęp odbywa się za pomocą indeksowania B-tree. Umożliwi to zmianę rozmiaru datasetów, ponieważ dane są przchoywane w stałych chunkach oraz wykorzystanie skompresowanego filtrowania. Rekomendowany rozmiar chunka 10KB - 1MB.
+
+---
+
+### 6. Przykłady
+Z użyciem pythonwej biblioteki **h5py**.
+1. Otwieranie i tworzenie plików
+    ```python
+    import h5py
+
+    # Poprawne rodzaje: r(ro, plik musi istnieć), r+(rw), w(tworzy plik), w- (x)(tworzy plik, jeśli istnieje błąd), a(rw, tworzy jeśli nie ma - domyślnie) 
+    hdf_file = h5py.File('myfile.hdf5','r')
+    ```
+1. Tworzenie grup:
+    ```python
+    import h5py
+
+    group = hdf_file.create_group("groupa")
+    sub_group = hdf_file.crate_group("podgrupa")
+    # Grupy korzystają ze słownikowej konwncji pythona
+    group["podgrupa"]
+    # Usuwanie
+    del group["podgrupa"]
+    ```
+1. Lekkie dowiązania do grup:
+    ```python
+    import h5py
+
+    yfile = h5py.File('foo.hdf5','w')
+    group = myfile.create_group("somegroup")
+    myfile["alias"] = h5py.SoftLink('/somegroup')
+
+    # Usunięci spowoduje błędy
+    del myfile['somegroup']
+    print myfile['alias']
+    # KeyError: 'Component not found (Symbol table: Object not found)'
+    ```
+1. Tworzenie datasetów:
+    ```python
+    import h5py
+    import numpy as np
+
+    # h5py wspiera większość typów numpy
+    dataset = hdf_file.create_dataset(name="name", shape=(100,), dtype="f")
+    dataset_copy = hdf_file["name"] 
+
+    # Można użyć np.array() zamiast shape i dtype
+    array = np.arrange(100)
+    dataset = hdf_file.create_dataset(name="name", data=array)
+    ```
+1. Pisanie w blokach/częściach(chunks)
+    ```python
+    import h5py
+
+    # Dane będą trzyamne w blokach 100 x 100
+    dataset = hdf_file.create_dataset(name="chunked", (1000, 1000), chunks=(100,100))
+    # Automatyczny dobór rozmiaru chunka
+    dataset = hdf_file.create_dataset("autochunk", (1000, 1000), chunks=True)
+    ```
+1. Dataset ze zemiennym rozmiarem
+    ```python
+    import h5py
+
+    # Z ograniczeniem maksymalnego rozmiaru
+    dataset = hdf_file.create_dataset("resizable", (10,10), maxshape=(500, 20))
+    # Potencjalnie nieograniczone(2**64)
+    dataset = hdf_file.create_dataset("resizable", (10,10), maxshape=(None, 10))
+    # Zmiana rozmiaru nie jest zaimplementowana tak jak w numpy, jesli ktoras os si³
+    #  skurczy, dane w brakuajcej czesci sa odrzucane, nie nastpuje przeorganizowanie danych.
+    dataset.resize(new_size, axis)
+    ```
+1. Filter pipline
+    ```python
+    import h5py
+
+    # Dane w blokach mogą by przekształcane przy pomcy filter pipiline. Dane są
+    #  skompresowane na dysku i automatycznie dekompresowane gdy następuję odczyt. 
+    # Jeśli dane są utowrzone z filtrem kompresji, dalej można z niej korzystać jak ze zwykłego datasetu
+    datset = hdf_file.create_dataset("zipped", (100, 100), compression="gzip")
+    # Można dodac opcje
+    datset = hdf_file.create_dataset("zipped", (100, 100), compression="gzip", compression_opts=9)
+    # Filtry starty kompresji: gzip (opts is compression level 0 - 9), lzf(no opts), szip
+    # (no opts). Można używac customowych filtrów.
+    # Scale-Offset filter - skaluje to określonego typu danych scaleoffset="i8"
+    # Shuffle filter - gzip o lzf lepiej działają na podobnych danych, włącz ten filtr 
+    # aby zoptymalziować shuffe=True
+    # Fletcher32 filter - sprawdzanie sum kontrolnych fletcher32=True
+    ```
+1.  Czytanie i zapisywanie danych tak samo jak w numpy. Broadcasting jest dostępny.
+1. Fancy indexing również jest dostępne.
+
+### 7. HDF5 w Tensorflow
+W tensorflow jest dostępna klasa `tf.keras.utils.HDF5Matrix`, która wspiera zbiory danych HDF5, aczkolwiek jest przestarzała i trenowanie modeli z taką macierzą może okazać się niezoptymalizowane pod kątem wydajności i może nie działać z każdą startegią dystrybucji. Zaleca się użycie tensorflow.io żeby załadować dane z pliku .hdf5 do tf.data i przekazać do Kerasa.
+https://www.tensorflow.org/io/api_docs/python/tfio/v0/IODataset#from_hdf5
+```python
+tfio.IODataset.from_hdf5("nazwa_pliku", "dataset_name", spec, name)
+# spec - tf.TensorSpec lub dtype zbioru danych. W trybie grafu, spec jes  wymagany.
+# W trybie eager jest sondowany automatycznie.
+# name - prefix nazwy dla IOTensor (opcjonalnie)
+```
+
+
+
+
+#### Bibliografia
+- https://ksopyla.com/data-science/big-data-na-dysku-czyli-jak-przetwarzac-pliki-hdf5-w-python/
