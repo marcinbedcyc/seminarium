@@ -131,3 +131,120 @@ Przykładowy output:
 0.044219: 278:red fox, Vulpes vulpes
 ```
 Gdzie pierwsza kolumna to jest trafność modelu, a druga to etykiety dopasowania.
+
+
+### Tesnorflow - instalacja ze źródła:
+1. Instalcja pythona i paczek zależności: `sudo apt install python-dev python-pip  # or python3-dev python3-pip
+`
+1. Instalacj zależności:
+	```pip install -U --user pip six numpy wheel setuptools mock 'future>=0.17.1'
+	pip install -U --user keras_applications --no-deps
+	pip install -U --user keras_preprocessing --no-deps
+	```
+	W wirtulanym śwrodowisku bez `--user`
+1. Instalacja `bazel`: Problem z instalacja na raspiabianie ... **FAILED**
+	```
+	sudo apt install curl
+	curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
+	echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+
+	sudo apt update && sudo apt install bazel
+	# or
+	sudo apt update && sudo apt full-upgrade
+	# older version
+	sudo apt install bazel-1.0.0
+	```
+1. Clone repo:
+	```
+	git clone https://github.com/tensorflow/tensorflow.git
+	cd tensorflow
+	```
+1. Configure build:
+	```
+	./configure
+	```
+1. Build the pip package:
+	```
+	bazel build //tensorflow/tools/pip_package:build_pip_package
+	```
+1. Install the package:
+	```
+	pip install /tmp/tensorflow_pkg/tensorflow-version-tags.whl
+	```
+### Link:
+1. Instalcja ze źródła, z przygotowanej paczki:
+	```
+	pip install https://storage.googleapis.com/tensorflow/raspberrypi/tensorflow-2.1.0-cp35-none-linux_armv7l.whl
+	``` 
+	**Błąd**. Wymagany Python 3.5:
+	```
+	ERROR: tensorflow-2.1.0-cp35-none-linux_armv7l.whl is not a supported wheel on this platform.
+	```
+1. Instalacja conda, dokładniej `miniconda3` ze względu na raspberry pi:
+	```
+	wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-armv7l.sh
+	md5sum Miniconda3-latest-Linux-armv7l.sh
+	bash Miniconda3-latest-Linux-armv7l.sh
+	```
+	Akceptujemy warunki umowy: `yes`
+	Ustawiamy install location na :`/home/pi/minconda3`
+	Akceptujemy doanie do .abshrc: `yes`
+	Po instalacji, restart aby otrzymać zmiany
+	Dodaj Beryconda menadżer pakietów:
+	`conda config --ad channles rpi`
+	Zainstaluj docelową wersję python:
+	`conda install python=3.5`
+	Ustaw środowisko wirtualne dla tej wersji:
+	`conda create --name py35 python=3.5`
+	Aktywuj:
+	`source activate py35`
+1. Próba ponownej instalacji - **ERROR** zwizany z scipy: 
+	```
+	sudo apt-get install python3-scipy # X
+	conda install scipy # 1.0.0
+	pip install --upgrade pip # X
+	pip install https://www.piwheels.org/simple/scipy/scipy-1.3.3-cp35-cp35m-linux_armv7l.whl # 1.3.3
+	```
+1. Próba kolejnego rozwiązania: Docker + build z repo
+	```
+	# Budowanie przy pomocy set up repositories (EXCPET raspbian)
+	git clone https://github.com/tensorflow/tensorflow.git
+	cd tensorflow
+	sudo apt-get update
+
+	sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
+
+	curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+
+	sudo add-apt-repository \
+   	"deb [arch=arm64] https://download.docker.com/linux/debian \
+   	$(lsb_release -cs) \
+   	stable"
+
+   	UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbf in position 52: invalid start byte
+
+	# Używanie convenienve script 
+	# https://docs.docker.com/engine/install/debian/#install-using-the-convenience-script
+	curl -fsSL https://get.docker.com -o get-docker.sh
+	sudo sh get-docker.sh
+
+	sudo usermod -aG docker your-user
+
+	# Nie działa - błąd scipy
+	CI_DOCKER_EXTRA_PARAMS="-e CI_BUILD_PYTHON=python3 -e CROSSTOOL_PYTHON_INCLUDE_PATH=/usr/include/python3.7" \
+    tensorflow/tools/ci_build/ci_build.sh PI-PYTHON3 \
+    tensorflow/tools/ci_build/pi/build_raspberry_pi.sh
+
+	# Budowanie
+	CI_DOCKER_EXTRA_PARAMS="-e CI_BUILD_PYTHON=python3.7 -e CROSSTOOL_PYTHON_INCLUDE_PATH=/usr/include/python3.7" \
+    tensorflow/tools/ci_build/ci_build.sh PI-PYTHON3 \
+    tensorflow/tools/ci_build/pi/build_raspberry_pi.sh
+
+	```
+
+
