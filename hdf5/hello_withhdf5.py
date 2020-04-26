@@ -23,15 +23,15 @@ with h5py.File("file.hdf5", "w") as hdf_file:
     sub_dataset.attrs['sensor type'] = 'sensor IO'
     sub_dataset.attrs['date_taken'] = dt.datetime.now().isoformat()
 
-    print("========TESTING=====")
-    dset = sub_group.create_dataset("MyDataset", (10, 10, 10), 'f')
-    print(dset[0, 0, 0])
-    print(dset[0, 2:10, 1:9:3])
-    print(dset[:, ::2, 5])
-    print(dset[0])
-    print(dset[1, 5])
-    print(dset[0, ...])
-    print(dset[..., 6])
+    # print("========TESTING=====")
+    # dset = sub_group.create_dataset("MyDataset", (10, 10, 10), 'f')
+    # print(dset[0, 0, 0])
+    # print(dset[0, 2:10, 1:9:3])
+    # print(dset[:, ::2, 5])
+    # print(dset[0])
+    # print(dset[1, 5])
+    # print(dset[0, ...])
+    # print(dset[..., 6])
 
 with h5py.File('file.hdf5', 'r') as hdf_file:
     # show all objects in file

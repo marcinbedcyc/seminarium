@@ -117,6 +117,24 @@ Z użyciem pythonwej biblioteki **h5py**.
     ```
 1.  Czytanie i zapisywanie danych tak samo jak w numpy. Broadcasting jest dostępny.
 1. Fancy indexing również jest dostępne.
+1. Arybuty - można dodawać do grupy i zbiorów danych
+    ```python
+    import h5py
+
+    dataset = hdf_file.create_dataset("resizable", (10,10), dtype="f"))
+    group = hdf_file.create_group("groupa")
+
+    dataset.attr["atyrbut1"] = "wartość1"
+    group.attr["atrybut2"] = "wartość2"
+    ```
+
+    Właściwości atrybutów:
+    * Mogą być tworzone w dowolnej tablicy skalarnej lub NumPy
+    * Każdy atrybut powinien być mały mniejszy niż 64K
+    * Nie ma częsiowego I/O , cały atrybut musi zostać odczytany.
+
+    Domyślnie po atrybutach iteruje sie w alfabetyczny porządku,, jeśli grupa została stworzona z `track_order=True`, kolejność dodania jest zapamiętywana. Można ustalić wartość dla wszystkich poprzez:
+    `h5.get_config().track_order`
 
 ### 7. HDF5 w Tensorflow
 W tensorflow jest dostępna klasa `tf.keras.utils.HDF5Matrix`, która wspiera zbiory danych HDF5, aczkolwiek jest przestarzała i trenowanie modeli z taką macierzą może okazać się niezoptymalizowane pod kątem wydajności i może nie działać z każdą startegią dystrybucji. Zaleca się użycie tensorflow.io żeby załadować dane z pliku .hdf5 do tf.data i przekazać do Kerasa.
