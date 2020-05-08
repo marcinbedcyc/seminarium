@@ -3,6 +3,7 @@ import argparse
 from PIL import Image
 import numpy as np
 import pprint
+import time
 
 
 if __name__ == '__main__':
@@ -20,6 +21,7 @@ if __name__ == '__main__':
         help='image to be classified')
     args = parser.parse_args()
 
+    start_time = time.time()
     interpreter = tf.lite.Interpreter(model_path=args.model_file)
 
     interpreter.allocate_tensors()
@@ -33,22 +35,24 @@ if __name__ == '__main__':
     # input_data = np.expand_dims(img, axis=0)
     input_data = np.float32(input_data)
 
-    print(input_details)
-    print(output_details)
+    # print(input_details)
+    # print(output_details)
 
-    print(input_data.astype(int))
-    print(input_data.shape)
+    # print(input_data.astype(int))
+    # print(input_data.shape)
     input_data.reshape((1, 28, 28, 1))
-    print(input_data.shape)
+    # print(input_data.shape)
 
     interpreter.set_tensor(input_details[0]['index'], input_data.reshape(1, 28, 28, 1))
     interpreter.invoke()
     output_data = interpreter.get_tensor(output_details[0]['index'])
+    end_time = time.time() - start_time
 
     print(type(input_data))
-    print(output_data)
+    # print(output_data)
     results = np.squeeze(output_data)
     print(results.argsort()[9])
 
     top_k = results.argsort()[-5:][::-1]
-    pprint.pprint(top_k)
+    # pprint.pprint(top_k)
+    print(f"{end_time:.2}s")

@@ -3,10 +3,12 @@ import sys
 import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
+import time
 
 if __name__ == "__main__":
 
     # Restoring model
+    start_time = time.time()
     model = tf.keras.models.load_model("model")
     # model.summary()
 
@@ -26,4 +28,6 @@ if __name__ == "__main__":
     image = Image.open("images/four.bmp")
     data = np.array(image, dtype=np.float)
     data = model.predict_classes(data.reshape(1, 28, 28, 1))[0]
+    end_time = time.time() - start_time
     print(data)
+    print(f"{end_time:.2}s")
