@@ -22,7 +22,6 @@ def predict(image_path, model):
         Trained model to calculate prediction.
     """
     print("-----------------------------------------------------------")
-    start_time = time.time()
 
     # Load image
     image = Image.open(image_path)
@@ -32,13 +31,14 @@ def predict(image_path, model):
     arr = np.where(input_data > 0, 1, 0)
     print(arr)
 
+    start_time = time.time()
     # Get prediction
     result = model.predict_classes(input_data.reshape(1, 28, 28, 1))[0]
 
     end_time = time.time() - start_time
 
     print(result)
-    print(f"Czas wykonania:\t{round(end_time, 3)}s")
+    print(f"Czas wykonania:\t{round(end_time, 4)}s")
     print("-----------------------------------------------------------\n\n")
 
 

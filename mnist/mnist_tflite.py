@@ -27,8 +27,6 @@ def predict(image_path, interpreter):
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
 
-    start_time = time.time()
-
     # Load image
     img = Image.open(f"{image_path}").resize((28, 28))
 
@@ -41,6 +39,7 @@ def predict(image_path, interpreter):
     arr = np.where(input_data > 0, 1, 0)
     print(arr)
 
+    start_time = time.time()
     # Load data to interpreter
     interpreter.set_tensor(input_details[0]['index'], input_data.reshape(1, 28, 28, 1))
     # Invoke interpreter
@@ -54,7 +53,7 @@ def predict(image_path, interpreter):
     results = np.squeeze(output_data)
     print(f"Wynik:\t{results.argsort()[9]}")
 
-    print(f"Czas wykonania:\t{round(end_time, 3)}s")
+    print(f"Czas wykonania:\t{round(end_time, 4)}s")
     print("-----------------------------------------------------------\n\n")
 
 
